@@ -16,7 +16,7 @@ import BotIcon from "./assets/icons/bot.png";
 import { VueBotUI } from "./vue-bot-ui";
 // import { messageService } from "./helpers/message";
 import axios from 'axios';
-const apiKey = "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";
+const apiKey = process.env.VUE_APP_OPENAI_API_KEY;
 const client = axios.create({
   headers: {
     Authorization: "Bearer " + apiKey
