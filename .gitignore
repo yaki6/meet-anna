@@ -10,9 +10,9 @@ docs/.vuepress/dist
 
 # dist
 # local env files
+.env
 .env.local
 .env.*.local
-.env
 
 # related test files
 /tests/e2e/reports
