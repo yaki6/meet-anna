@@ -11,6 +11,8 @@
     @msg-send="msgSend"
   )
   p  messageData: {{ messageData }}
+  button(@click="newChat") New Chat
+  p thread: {{ thread }}
 </template>
 <script>
 import BotIcon from "./assets/icons/bot.png";
@@ -18,6 +20,7 @@ import { VueBotUI } from "./vue-bot-ui";
 // import { messageService } from "./helpers/message";
 import axios from 'axios';
 // import { useStorage } from '@vueuse/core'
+import thread from "./helpers/thread"
 const apiKey = process.env.VUE_APP_OPENAI_API_KEY;
 const client = axios.create({
   headers: {
@@ -34,6 +37,7 @@ export default {
   data () {
     return {
       messageData: [],
+      thread: thread, // initial prompt
       botTyping: false,
       inputDisable: false,
       botOptions: {
@@ -50,7 +54,7 @@ export default {
   methods: {
     botStart () {
       // Request first message here
-      if (!this.messageData) {
+      if (this.messageData.length === 0) {
         this.botTyping = true;
         setTimeout(() => {
           this.botTyping = false;
@@ -72,21 +76,24 @@ export default {
         text: value.text
       });
 
-      this.getResponse(value.text);
+      this.getResponse();
     },
-
+    newChat () {
+      this.messageData = [];
+      this.thread = thread;
+    },
     // Submit the message from user to open API, then get the response from Bot
-    getResponse (text) {
+    getResponse () {
       // Loading
       this.botTyping = true;
-
+      const prompt = this.thread + "\nAnna:"
       // Post the message from user here
       // Then get the response as below
       const params = {
-        prompt: text,
+        prompt: prompt,
         model: "text-davinci-003",
         max_tokens: 100,
-        temperature: 0.7
+        temperature: 0.8
       };
       // Create new message from openAI API
       client
@@ -111,6 +118,16 @@ export default {
     messageData () {
       const parsed = JSON.stringify(this.messageData);
       localStorage.setItem('messageData', parsed);
+      // save the thread to local data to feed to OpenAI
+      var thread = "You are a super helpful, empathetic, positive friend named Anna. Your job is to help User improve their relationship by listening to their situation and giving useful advice.\n\nYou can continue the conversation based on the chat history given to you. You can ask the user further questions for clarification or suggest action points to improve their relationship.\n\nAsk only one question at a time. And do not repeat any previous response or question.\n\n###"; // initial prompt
+      this.messageData.forEach(function (msg) {
+        if (msg.agent === "user") {
+          thread = thread + '\nUser:' + msg.text;
+        } else {
+          thread = thread + '\nAnna:' + msg.text;
+        }
+      })
+      this.thread = thread
     }
   },
   mounted () {
