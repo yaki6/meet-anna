@@ -1,6 +1,6 @@
 <template lang="pug">
 #app
-  img(alt="Vue Bot UI", src="./assets/logo.png")
+  img(alt="Meet Anna", src="./assets/logo.png", height="200")
   VueBotUI(
     :options="botOptions",
     :messages="messageData",
@@ -10,12 +10,14 @@
     @init="botStart",
     @msg-send="msgSend"
   )
+  p  messageData: {{ messageData }}
 </template>
 <script>
 import BotIcon from "./assets/icons/bot.png";
 import { VueBotUI } from "./vue-bot-ui";
 // import { messageService } from "./helpers/message";
 import axios from 'axios';
+// import { useStorage } from '@vueuse/core'
 const apiKey = process.env.VUE_APP_OPENAI_API_KEY;
 const client = axios.create({
   headers: {
@@ -47,19 +49,19 @@ export default {
 
   methods: {
     botStart () {
-      // Get token if you want to build a private bot
       // Request first message here
-
+      if (!this.messageData) {
+        this.botTyping = true;
+        setTimeout(() => {
+          this.botTyping = false;
+          this.messageData.push({
+            agent: "bot",
+            type: "text",
+            text: "Hello, this is Anna. What do you want to talk about?"
+          });
+        }, 500);
+      }
       // Fake typing for the first message
-      this.botTyping = true;
-      setTimeout(() => {
-        this.botTyping = false;
-        this.messageData.push({
-          agent: "bot",
-          type: "text",
-          text: "Hello, this is Anna. What do you want to talk about?"
-        });
-      }, 1000);
     },
 
     msgSend (value) {
@@ -73,7 +75,7 @@ export default {
       this.getResponse(value.text);
     },
 
-    // Submit the message from user to bot API, then get the response from Bot
+    // Submit the message from user to open API, then get the response from Bot
     getResponse (text) {
       // Loading
       this.botTyping = true;
@@ -98,12 +100,26 @@ export default {
           };
           this.inputDisable = response.disableInput;
           this.messageData.push(replyMessage);
-
           // finish
           this.botTyping = false;
         })
         .catch(() => {
         });
+    }
+  },
+  watch: {
+    messageData () {
+      const parsed = JSON.stringify(this.messageData);
+      localStorage.setItem('messageData', parsed);
+    }
+  },
+  mounted () {
+    if (localStorage.getItem('messageData')) {
+      try {
+        this.messageData = JSON.parse(localStorage.getItem('messageData'));
+      } catch (e) {
+        localStorage.removeItem('messageData');
+      }
     }
   }
 };

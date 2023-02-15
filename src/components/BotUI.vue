@@ -92,7 +92,7 @@ export default {
     return {
       botActive: false,
       defaultOptions: {
-        botTitle: 'Chatbot',
+        botTitle: 'Anna',
         colorScheme: '#1b53d0',
         textColor: '#fff',
         bubbleBtnSize: 56,
