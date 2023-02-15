@@ -102,8 +102,7 @@ export default {
           // finish
           this.botTyping = false;
         })
-        .catch((err) => {
-          console.log(err);
+        .catch(() => {
         });
     }
   }
